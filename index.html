@@ -1615,23 +1615,25 @@ async function loadCloudData(){
         if(error) throw error;
 
         const cloudItems = (data || []).map(normalizeCloudRow);
-        const cloudIds = new Set(cloudItems.map(x => String(x.id)));
+        const cloudInitialized = localStorage.getItem("ghostXCloudInitialized") === "1";
 
-        /* Migra los registros que ya estaban guardados solo en este navegador. */
-        const localOnly = incomes.filter(
-            x => !cloudIds.has(String(x.id))
-        );
-
-        if(localOnly.length){
-            const rows = localOnly.map(localToCloudRow);
+        /*
+           IMPORTANTE:
+           Los datos de Supabase son la fuente principal.
+           Solo hacemos la migracion de localStorage UNA SOLA VEZ.
+           Asi un registro que fue eliminado de la nube no vuelve a aparecer.
+        */
+        if(!cloudInitialized && cloudItems.length === 0 && incomes.length > 0){
+            const rows = incomes.map(localToCloudRow);
 
             const { error: insertError } = await supabaseClient
                 .from("ghostx_ingresos")
-                .insert(rows);
+                .upsert(rows, { onConflict:"id" });
 
             if(insertError) throw insertError;
 
-            /* Volvemos a leer para que PC y celular queden con la misma fuente. */
+            localStorage.setItem("ghostXCloudInitialized", "1");
+
             const { data: refreshed, error: refreshError } = await supabaseClient
                 .from("ghostx_ingresos")
                 .select("id,app_id,service,concept,amount,date,category,description")
@@ -1643,6 +1645,7 @@ async function loadCloudData(){
             incomes = (refreshed || []).map(normalizeCloudRow);
         }else{
             incomes = cloudItems;
+            localStorage.setItem("ghostXCloudInitialized", "1");
         }
 
         localStorage.setItem(
@@ -1682,19 +1685,43 @@ async function saveIncomeToCloud(income){
 }
 
 async function deleteIncomeFromCloud(id){
-    if(!cloudConfigured() || !cloudReady){
-        return true;
+    if(!cloudConfigured()) return false;
+
+    const numericId = Number(id);
+    if(!Number.isFinite(numericId)){
+        alert("No se pudo identificar el ingreso que quieres eliminar.");
+        return false;
     }
 
     const { error } = await supabaseClient
         .from("ghostx_ingresos")
         .delete()
         .eq("app_id", GHOST_APP_ID)
-        .eq("id", Number(id));
+        .eq("id", numericId);
 
     if(error){
         console.error("Ghost X - Error al eliminar de Supabase:", error);
-        alert("No se pudo eliminar el registro de la nube. El registro NO se eliminará del historial local.");
+        alert("No se pudo eliminar el registro de la nube. Revisa tu conexión e inténtalo nuevamente.");
+        return false;
+    }
+
+    /* Verificacion real: comprobamos que ese ID ya no exista en Supabase. */
+    const { data: stillThere, error: verifyError } = await supabaseClient
+        .from("ghostx_ingresos")
+        .select("id")
+        .eq("app_id", GHOST_APP_ID)
+        .eq("id", numericId)
+        .limit(1);
+
+    if(verifyError){
+        console.error("Ghost X - No se pudo verificar la eliminacion:", verifyError);
+        alert("No se pudo verificar la eliminacion en la nube. El registro no se quitará del historial.");
+        return false;
+    }
+
+    if((stillThere || []).length > 0){
+        console.error("Ghost X - Supabase no eliminó el registro. Revisa las políticas RLS.");
+        alert("Supabase no confirmó la eliminación. Revisa las políticas de la tabla.");
         return false;
     }
 
@@ -2230,20 +2257,17 @@ function renderHistory(serviceFilter=null,yearFilter=null,monthFilter=null){
 async function deleteIncome(id){
 
     const confirmDelete = confirm("¿Seguro que quieres eliminar este ingreso?");
-
     if(!confirmDelete) return;
 
-    // IMPORTANTE: primero eliminamos en la nube.
-    // Si Supabase falla, no tocamos el historial local.
-    const cloudDeleted = await deleteIncomeFromCloud(id);
+    const idText = String(id);
+    const previousIncomes = [...incomes];
 
-    if(!cloudDeleted){
-        return;
-    }
-
-    // Eliminar exactamente el mismo registro del dispositivo.
+    /*
+       PRIMERO quitamos el registro de la pantalla y de este dispositivo.
+       Así el total baja inmediatamente.
+    */
     incomes = incomes.filter(
-        item => String(item.id) !== String(id)
+        item => String(item.id) !== idText
     );
 
     localStorage.setItem(
@@ -2251,16 +2275,38 @@ async function deleteIncome(id){
         JSON.stringify(incomes)
     );
 
-    // Actualiza TODO: total general, servicio, mes, año,
-    // estadísticas y el historial que está visible.
     updateAll();
     renderHistory();
 
-    // Volvemos a leer la nube para asegurarnos de que ambos
-    // dispositivos trabajan con exactamente los mismos datos.
-    await loadCloudData();
+    /*
+       Después eliminamos exactamente el mismo ID de Supabase.
+       Si la nube falla, recuperamos el registro local para no perder datos.
+    */
+    const cloudDeleted = await deleteIncomeFromCloud(id);
 
-    console.log("Ghost X: historial y totales sincronizados correctamente.");
+    if(!cloudDeleted){
+        incomes = previousIncomes;
+        localStorage.setItem(
+            "ghostXIngresos",
+            JSON.stringify(incomes)
+        );
+        updateAll();
+        renderHistory();
+        return;
+    }
+
+    /*
+       Confirmamos que la lista local queda limpia y sincronizamos la vista.
+    */
+    localStorage.setItem(
+        "ghostXIngresos",
+        JSON.stringify(incomes)
+    );
+
+    updateAll();
+    renderHistory();
+
+    console.log("Ghost X: ingreso eliminado correctamente y sincronizado.");
 }
 
 
