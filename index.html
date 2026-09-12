@@ -1536,17 +1536,174 @@ header{
 </main>
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 
 /* =================================================
    DATOS
 ================================================= */
 
+const SUPABASE_URL = "https://vumpklurbsybsiimivjx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_V-d8DkvBE4kd5As2dhLxPw_7grfO9aQ";
+const GHOST_APP_ID = "ghost-x-panel-financiero";
+
+const supabaseClient =
+    window.supabase?.createClient
+        ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+        : null;
+
 let incomes = JSON.parse(
     localStorage.getItem("ghostXIngresos") || "[]"
 );
 
 let currentService = "PANEL";
+let cloudReady = false;
+let cloudLoading = false;
+
+/* =================================================
+   SUPABASE / NUBE
+================================================= */
+
+function cloudConfigured(){
+    return !!(
+        supabaseClient &&
+        SUPABASE_URL &&
+        SUPABASE_KEY &&
+        !SUPABASE_URL.includes("PEGA_AQUI") &&
+        !SUPABASE_KEY.includes("PEGA_AQUI")
+    );
+}
+
+function normalizeCloudRow(row){
+    return {
+        id: String(row.id),
+        service: row.service,
+        concept: row.concept,
+        amount: Number(row.amount) || 0,
+        date: row.date,
+        category: row.category,
+        description: row.description || ""
+    };
+}
+
+function localToCloudRow(item){
+    return {
+        id: Number(item.id),
+        app_id: GHOST_APP_ID,
+        service: item.service,
+        concept: item.concept,
+        amount: Number(item.amount) || 0,
+        date: item.date,
+        category: item.category || item.service,
+        description: item.description || ""
+    };
+}
+
+async function loadCloudData(){
+    if(!cloudConfigured() || cloudLoading) return;
+
+    cloudLoading = true;
+
+    try{
+        const { data, error } = await supabaseClient
+            .from("ghostx_ingresos")
+            .select("id,app_id,service,concept,amount,date,category,description")
+            .eq("app_id", GHOST_APP_ID)
+            .order("date", { ascending:false });
+
+        if(error) throw error;
+
+        const cloudItems = (data || []).map(normalizeCloudRow);
+        const cloudIds = new Set(cloudItems.map(x => String(x.id)));
+
+        /* Migra los registros que ya estaban guardados solo en este navegador. */
+        const localOnly = incomes.filter(
+            x => !cloudIds.has(String(x.id))
+        );
+
+        if(localOnly.length){
+            const rows = localOnly.map(localToCloudRow);
+
+            const { error: insertError } = await supabaseClient
+                .from("ghostx_ingresos")
+                .insert(rows);
+
+            if(insertError) throw insertError;
+
+            /* Volvemos a leer para que PC y celular queden con la misma fuente. */
+            const { data: refreshed, error: refreshError } = await supabaseClient
+                .from("ghostx_ingresos")
+                .select("id,app_id,service,concept,amount,date,category,description")
+                .eq("app_id", GHOST_APP_ID)
+                .order("date", { ascending:false });
+
+            if(refreshError) throw refreshError;
+
+            incomes = (refreshed || []).map(normalizeCloudRow);
+        }else{
+            incomes = cloudItems;
+        }
+
+        localStorage.setItem(
+            "ghostXIngresos",
+            JSON.stringify(incomes)
+        );
+
+        cloudReady = true;
+        updateAll();
+        renderHistory();
+
+        console.log("Ghost X: datos sincronizados con Supabase.");
+    }catch(error){
+        console.error("Ghost X - Error al cargar Supabase:", error);
+        cloudReady = false;
+        updateAll();
+        renderHistory();
+    }finally{
+        cloudLoading = false;
+    }
+}
+
+async function saveIncomeToCloud(income){
+    if(!cloudConfigured() || !cloudReady) return;
+
+    const { error } = await supabaseClient
+        .from("ghostx_ingresos")
+        .upsert(
+            localToCloudRow(income),
+            { onConflict:"id" }
+        );
+
+    if(error){
+        console.error("Ghost X - Error al guardar en Supabase:", error);
+        alert("El ingreso se guardó en este dispositivo, pero no pudo sincronizarse con la nube.");
+    }
+}
+
+async function deleteIncomeFromCloud(id){
+    if(!cloudConfigured() || !cloudReady) return;
+
+    const { error } = await supabaseClient
+        .from("ghostx_ingresos")
+        .delete()
+        .eq("app_id", GHOST_APP_ID)
+        .eq("id", Number(id));
+
+    if(error){
+        console.error("Ghost X - Error al eliminar de Supabase:", error);
+        alert("No se pudo eliminar el registro de la nube.");
+    }
+}
+
+async function refreshCloudOnReturn(){
+    if(document.visibilityState === "visible" && cloudReady){
+        await loadCloudData();
+    }
+}
+
+document.addEventListener("visibilitychange", refreshCloudOnReturn);
+window.addEventListener("focus", loadCloudData);
 
 
 /* =================================================
@@ -1629,7 +1786,7 @@ function openRegister(service){
 ================================================= */
 
 document.getElementById("incomeForm")
-.addEventListener("submit",function(e){
+.addEventListener("submit",async function(e){
 
     e.preventDefault();
 
@@ -1666,6 +1823,8 @@ document.getElementById("incomeForm")
         JSON.stringify(incomes)
     );
 
+    /* Guarda también en Supabase para compartir los datos entre dispositivos. */
+    await saveIncomeToCloud(income);
 
     this.reset();
 
@@ -2050,7 +2209,9 @@ function renderHistory(serviceFilter=null,yearFilter=null,monthFilter=null){
    ELIMINAR
 ================================================= */
 
-function deleteIncome(id){
+async function deleteIncome(id){
+
+    await deleteIncomeFromCloud(id);
 
     incomes =
         incomes.filter(
@@ -2282,6 +2443,9 @@ setupYears();
 updateAll();
 
 renderHistory();
+
+/* Carga los datos de Supabase al iniciar. */
+loadCloudData();
 
 </script>
 
