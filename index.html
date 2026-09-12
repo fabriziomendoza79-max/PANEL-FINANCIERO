@@ -1710,6 +1710,19 @@ async function refreshCloudOnReturn(){
 document.addEventListener("visibilitychange", refreshCloudOnReturn);
 window.addEventListener("focus", loadCloudData);
 
+/*
+   SINCRONIZACION AUTOMATICA ENTRE PC Y CELULAR
+   Cada pocos segundos se consulta Supabase mientras la pagina
+   esta visible. Asi, si se agrega o elimina un historial en un
+   dispositivo, los demas dispositivos reciben el cambio sin
+   tener que cerrar la pagina.
+*/
+setInterval(() => {
+    if(document.visibilityState === "visible" && !cloudLoading){
+        loadCloudData();
+    }
+}, 3000);
+
 
 /* =================================================
    MONEDA
@@ -2220,15 +2233,17 @@ async function deleteIncome(id){
 
     if(!confirmDelete) return;
 
-    // Primero eliminamos de Supabase.
-    // Si falla, NO borramos el registro local para evitar diferencias.
+    // IMPORTANTE: primero eliminamos en la nube.
+    // Si Supabase falla, no tocamos el historial local.
     const cloudDeleted = await deleteIncomeFromCloud(id);
 
-    if(!cloudDeleted) return;
+    if(!cloudDeleted){
+        return;
+    }
 
-    // Después eliminamos del almacenamiento local.
+    // Eliminar exactamente el mismo registro del dispositivo.
     incomes = incomes.filter(
-        x => String(x.id) !== String(id)
+        item => String(item.id) !== String(id)
     );
 
     localStorage.setItem(
@@ -2236,11 +2251,16 @@ async function deleteIncome(id){
         JSON.stringify(incomes)
     );
 
-    // Actualizar estadísticas, meses e historial inmediatamente.
+    // Actualiza TODO: total general, servicio, mes, año,
+    // estadísticas y el historial que está visible.
     updateAll();
     renderHistory();
 
-    console.log("Ghost X: ingreso eliminado de Supabase y del dispositivo.");
+    // Volvemos a leer la nube para asegurarnos de que ambos
+    // dispositivos trabajan con exactamente los mismos datos.
+    await loadCloudData();
+
+    console.log("Ghost X: historial y totales sincronizados correctamente.");
 }
 
 
