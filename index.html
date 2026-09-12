@@ -1,0 +1,2289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>  Panel Financiero</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --blue:#168cff;
+    --blue2:#0066ff;
+
+    --green:#16d66b;
+    --green2:#00a84f;
+
+    --red:#ff304f;
+    --red2:#d90027;
+
+    --gold:#ffc400;
+
+    --bg:#020303;
+    --card:#0b0d0e;
+    --card2:#101213;
+    --border:#242729;
+    --text:#f5f7f8;
+    --muted:#858b90;
+}
+
+body{
+    font-family:"Inter",Arial,sans-serif;
+    background:#000;
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+}
+
+/* =========================
+   FONDO
+========================= */
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 20%,rgba(0,110,255,.08),transparent 25%),
+        radial-gradient(circle at 80% 30%,rgba(255,0,40,.05),transparent 25%),
+        radial-gradient(circle at 50% 80%,rgba(0,255,120,.04),transparent 25%);
+    pointer-events:none;
+    z-index:-2;
+}
+
+.money{
+    position:fixed;
+    color:#fff;
+    opacity:.08;
+    font-size:18px;
+    font-weight:900;
+    pointer-events:none;
+    animation:moneyFloat linear infinite;
+    z-index:-1;
+}
+
+@keyframes moneyFloat{
+    0%{
+        transform:translateY(110vh) rotate(0deg);
+        opacity:0;
+    }
+    10%{
+        opacity:.10;
+    }
+    90%{
+        opacity:.10;
+    }
+    100%{
+        transform:translateY(-120px) rotate(360deg);
+        opacity:0;
+    }
+}
+
+/* =========================
+   HEADER
+========================= */
+
+header{
+    height:74px;
+    width:100%;
+    border-bottom:1px solid #1d1f20;
+    background:rgba(0,0,0,.94);
+    backdrop-filter:blur(20px);
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 28px;
+
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:21px;
+    font-weight:900;
+    letter-spacing:1px;
+}
+
+.logoGhost{
+    width:36px;
+    height:36px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:10px;
+    background:#111;
+    border:1px solid #292929;
+    font-size:22px;
+    box-shadow:0 0 18px rgba(255,255,255,.08);
+}
+
+.nav{
+    display:flex;
+    gap:7px;
+}
+
+.nav button{
+    border:1px solid #27292a;
+    background:#101112;
+    color:#eee;
+    border-radius:9px;
+    padding:11px 15px;
+    font-weight:800;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.nav button:hover{
+    transform:translateY(-2px);
+}
+
+.nav button.active.panel{
+    border-color:var(--blue);
+    box-shadow:0 0 18px rgba(22,140,255,.25);
+}
+
+.nav button.active.sms{
+    border-color:var(--green);
+    box-shadow:0 0 18px rgba(22,214,107,.25);
+}
+
+.nav button.active.streaming{
+    border-color:var(--red);
+    box-shadow:0 0 18px rgba(255,48,79,.25);
+}
+
+.nav button.active.finance{
+    border-color:var(--gold);
+}
+
+.nav button.active.history{
+    border-color:#fff;
+}
+
+/* =========================
+   CONTENEDOR
+========================= */
+
+.container{
+    width:min(100%,900px);
+    margin:0 auto;
+    padding:38px 20px 80px;
+}
+
+.section{
+    display:none;
+}
+
+.section.active{
+    display:block;
+}
+
+/* =========================
+   TITULO
+========================= */
+
+.service-title{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:20px;
+}
+
+.service-icon{
+    width:44px;
+    height:44px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:12px;
+
+    background:#101112;
+    border:1px solid #282b2d;
+
+    font-size:25px;
+}
+
+.service-title h1{
+    font-size:28px;
+    font-weight:900;
+}
+
+.service-title p{
+    color:#777;
+    font-size:13px;
+    margin-top:3px;
+}
+
+/* colores por servicio */
+
+.panel .service-icon{
+    border-color:rgba(22,140,255,.5);
+    box-shadow:0 0 20px rgba(22,140,255,.15);
+}
+
+.sms .service-icon{
+    border-color:rgba(22,214,107,.5);
+    box-shadow:0 0 20px rgba(22,214,107,.15);
+}
+
+.streaming .service-icon{
+    border-color:rgba(255,48,79,.5);
+    box-shadow:0 0 20px rgba(255,48,79,.15);
+}
+
+/* =========================
+   CARDS RESUMEN
+========================= */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:18px;
+}
+
+.stat{
+    background:linear-gradient(145deg,#101111,#080909);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:17px;
+    min-height:92px;
+    transition:.25s;
+}
+
+.stat:hover{
+    transform:translateY(-3px);
+}
+
+.stat .label{
+    color:#858a8d;
+    font-size:12px;
+    margin-bottom:8px;
+}
+
+.stat .value{
+    font-size:20px;
+    font-weight:900;
+}
+
+/* colores */
+
+.panel .stat:first-child{
+    border-color:rgba(22,140,255,.35);
+    box-shadow:inset 0 0 25px rgba(22,140,255,.04);
+}
+
+.sms .stat:first-child{
+    border-color:rgba(22,214,107,.35);
+}
+
+.streaming .stat:first-child{
+    border-color:rgba(255,48,79,.35);
+}
+
+/* =========================
+   BOTON
+========================= */
+
+.register-btn{
+    border:none;
+    border-radius:9px;
+    padding:12px 17px;
+    font-weight:900;
+    cursor:pointer;
+    margin-bottom:22px;
+    transition:.25s;
+}
+
+.register-btn:hover{
+    transform:translateY(-2px);
+}
+
+.panel .register-btn{
+    background:#168cff;
+    color:#fff;
+    box-shadow:0 0 22px rgba(22,140,255,.25);
+}
+
+.sms .register-btn{
+    background:#16c965;
+    color:#fff;
+    box-shadow:0 0 22px rgba(22,214,107,.20);
+}
+
+.streaming .register-btn{
+    background:#e51d39;
+    color:#fff;
+    box-shadow:0 0 22px rgba(255,48,79,.20);
+}
+
+/* =========================
+   FINANZAS
+========================= */
+
+.finance-box{
+    border:1px solid #292c2e;
+    background:linear-gradient(145deg,#0e1011,#070808);
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:28px;
+}
+
+.panel .finance-box{
+    border-color:rgba(22,140,255,.35);
+}
+
+.sms .finance-box{
+    border-color:rgba(22,214,107,.35);
+}
+
+.streaming .finance-box{
+    border-color:rgba(255,48,79,.35);
+}
+
+.finance-head{
+    margin-bottom:18px;
+}
+
+.finance-head h2{
+    font-size:19px;
+    font-weight:900;
+}
+
+.finance-head p{
+    color:#73797d;
+    font-size:12px;
+    margin-top:4px;
+}
+
+.finance-inputs{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:11px;
+}
+
+.field label{
+    display:block;
+    color:#8b9093;
+    font-size:11px;
+    font-weight:700;
+    margin-bottom:6px;
+}
+
+.field input{
+    width:100%;
+    height:38px;
+    background:#050606;
+    color:white;
+    border:1px solid #292c2e;
+    border-radius:8px;
+    padding:0 10px;
+    outline:none;
+    font-weight:700;
+}
+
+.panel .field input:focus{
+    border-color:var(--blue);
+    box-shadow:0 0 10px rgba(22,140,255,.15);
+}
+
+.sms .field input:focus{
+    border-color:var(--green);
+    box-shadow:0 0 10px rgba(22,214,107,.15);
+}
+
+.streaming .field input:focus{
+    border-color:var(--red);
+    box-shadow:0 0 10px rgba(255,48,79,.15);
+}
+
+.finance-results{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin-top:15px;
+}
+
+.result{
+    background:#090a0a;
+    border:1px solid #25282a;
+    border-radius:11px;
+    padding:13px;
+}
+
+.result span{
+    color:#858a8d;
+    font-size:11px;
+}
+
+.result strong{
+    display:block;
+    font-size:17px;
+    margin-top:6px;
+}
+
+.result.profit strong{
+    color:#20df70;
+}
+
+.result.invest strong{
+    color:#ffc400;
+}
+
+.result.available strong{
+    color:#4ca3ff;
+}
+
+/* =========================
+   MESES
+========================= */
+
+.month-title{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:12px;
+}
+
+.month-title h2{
+    font-size:19px;
+}
+
+.year{
+    background:#0b0c0c;
+    color:#eee;
+    border:1px solid #292c2e;
+    border-radius:8px;
+    padding:8px 12px;
+}
+
+.months{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:11px;
+}
+
+.month{
+    background:linear-gradient(145deg,#101111,#080909);
+    border:1px solid #25282a;
+    border-radius:13px;
+    padding:15px;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.month:hover{
+    transform:translateY(-3px);
+}
+
+.month-name{
+    font-weight:800;
+    font-size:13px;
+}
+
+.month-value{
+    margin-top:7px;
+    font-size:13px;
+    color:#8f9599;
+    font-weight:700;
+}
+
+.panel .month:hover{
+    border-color:var(--blue);
+    box-shadow:0 0 18px rgba(22,140,255,.12);
+}
+
+.sms .month:hover{
+    border-color:var(--green);
+    box-shadow:0 0 18px rgba(22,214,107,.12);
+}
+
+.streaming .month:hover{
+    border-color:var(--red);
+    box-shadow:0 0 18px rgba(255,48,79,.12);
+}
+
+/* =========================
+   FORMULARIO
+========================= */
+
+.form-box{
+    background:#0b0d0e;
+    border:1px solid #282b2d;
+    border-radius:15px;
+    padding:20px;
+    margin-bottom:25px;
+}
+
+.form-box h2{
+    margin-bottom:16px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.form-group label{
+    display:block;
+    color:#8b9093;
+    font-size:12px;
+    margin-bottom:6px;
+}
+
+.form-group input,
+.form-group textarea{
+    width:100%;
+    background:#050606;
+    color:white;
+    border:1px solid #292c2e;
+    border-radius:8px;
+    padding:11px;
+    outline:none;
+}
+
+.form-group textarea{
+    resize:vertical;
+    min-height:90px;
+}
+
+.full{
+    grid-column:1/-1;
+}
+
+.save-btn{
+    margin-top:15px;
+    width:100%;
+    border:0;
+    border-radius:9px;
+    padding:13px;
+    background:#fff;
+    color:#000;
+    font-weight:900;
+    cursor:pointer;
+}
+
+/* =========================
+   HISTORIAL
+========================= */
+
+.history-tools{
+    display:flex;
+    gap:10px;
+    margin-bottom:15px;
+}
+
+.history-tools input,
+.history-tools select{
+    flex:1;
+    background:#0b0d0e;
+    border:1px solid #282b2d;
+    color:white;
+    border-radius:8px;
+    padding:11px;
+}
+
+.history-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.history-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    background:#0b0d0e;
+    border:1px solid #242729;
+    border-radius:11px;
+    padding:15px;
+}
+
+.history-info strong{
+    display:block;
+    margin-bottom:4px;
+}
+
+.history-info small{
+    color:#777;
+}
+
+.history-amount{
+    font-weight:900;
+}
+
+.delete{
+    border:1px solid #49242a;
+    background:#1a080b;
+    color:#ff536b;
+    border-radius:7px;
+    padding:7px 10px;
+    cursor:pointer;
+}
+
+/* =========================
+   FINANZAS GENERAL
+========================= */
+
+.general-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+}
+
+.general-card{
+    background:#0c0e0f;
+    border:1px solid #292c2e;
+    border-radius:14px;
+    padding:18px;
+}
+
+.general-card span{
+    color:#888;
+    font-size:12px;
+}
+
+.general-card strong{
+    display:block;
+    font-size:20px;
+    margin-top:7px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:800px){
+
+    /* Mismo diseño, solo adaptación para pantallas pequeñas */
+    header{
+        padding-left:14px;
+        padding-right:14px;
+    }
+
+    .logo{
+        flex-shrink:0;
+    }
+
+    .nav{
+        max-width:100%;
+        overflow-x:auto;
+        overflow-y:hidden;
+        -webkit-overflow-scrolling:touch;
+        scrollbar-width:none;
+        flex-shrink:1;
+    }
+
+    .nav::-webkit-scrollbar{
+        display:none;
+    }
+
+    .nav button{
+        white-space:nowrap;
+        flex-shrink:0;
+        touch-action:manipulation;
+    }
+
+    .container{
+        width:100%;
+        padding-left:16px;
+        padding-right:16px;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .finance-inputs{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .finance-results{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .general-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .months{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .history-item{
+        min-width:0;
+    }
+
+    .history-info{
+        min-width:0;
+        overflow-wrap:anywhere;
+    }
+
+    .history-amount{
+        white-space:nowrap;
+    }
+
+    input,select,textarea,button{
+        font:inherit;
+    }
+}
+
+@media(max-width:500px){
+
+    .container{
+        padding-left:12px;
+        padding-right:12px;
+    }
+
+    .service-title h1{
+        font-size:23px;
+    }
+
+    .service-title{
+        min-width:0;
+    }
+
+    .service-title > div:last-child{
+        min-width:0;
+    }
+
+    .service-title p{
+        overflow-wrap:anywhere;
+    }
+
+    .stats,
+    .finance-inputs,
+    .finance-results,
+    .months,
+    .general-grid,
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .finance-box,
+    .form-box{
+        padding:16px;
+    }
+
+    .history-tools{
+        flex-direction:column;
+    }
+
+    .history-tools input,
+    .history-tools select{
+        width:100%;
+        min-width:0;
+    }
+
+    .history-item{
+        align-items:flex-start;
+        flex-wrap:wrap;
+    }
+
+    .history-item > div:last-child{
+        margin-left:auto;
+    }
+
+    .register-btn,
+    .save-btn,
+    .delete,
+    .nav button,
+    .month{
+        touch-action:manipulation;
+    }
+
+    .month-title{
+        gap:10px;
+        flex-wrap:wrap;
+    }
+
+    .year{
+        max-width:100%;
+    }
+
+    /* Evita zoom automático de iOS/Android al enfocar campos */
+    .field input,
+    .form-group input,
+    .form-group textarea,
+    .history-tools input,
+    .history-tools select,
+    .year{
+        font-size:16px;
+    }
+}
+
+@media(prefers-reduced-motion:reduce){
+    .money{
+        animation:none;
+    }
+
+    *,
+    *::before,
+    *::after{
+        scroll-behavior:auto !important;
+        transition:none !important;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- DINERO DE FONDO -->
+
+<div class="money" style="left:5%;animation-duration:14s;">S/</div>
+<div class="money" style="left:13%;animation-duration:19s;">💵</div>
+<div class="money" style="left:22%;animation-duration:16s;">S/</div>
+<div class="money" style="left:31%;animation-duration:22s;">💰</div>
+<div class="money" style="left:40%;animation-duration:17s;">S/</div>
+<div class="money" style="left:50%;animation-duration:20s;">💵</div>
+<div class="money" style="left:60%;animation-duration:15s;">S/</div>
+<div class="money" style="left:70%;animation-duration:23s;">💰</div>
+<div class="money" style="left:80%;animation-duration:18s;">S/</div>
+<div class="money" style="left:90%;animation-duration:21s;">💵</div>
+
+
+<header>
+
+    <div class="logo">
+        <div class="logoGhost">👻</div>
+        PANEL FINANCIERO
+    </div>
+
+    <nav class="nav">
+
+        <button class="panel active panel" onclick="showSection('panelSection',this)">
+            👻 PANEL
+        </button>
+
+        <button class="sms" onclick="showSection('smsSection',this)">
+            <b>◉</b> SMS
+        </button>
+
+        <button class="streaming" onclick="showSection('streamingSection',this)">
+            <b>N</b> STREAMING
+        </button>
+
+        <button class="finance" onclick="showSection('financeSection',this)">
+            💰 FINANZAS
+        </button>
+
+        <button class="history" onclick="showSection('historySection',this)">
+            📜 HISTORIAL
+        </button>
+
+    </nav>
+
+</header>
+
+
+<main class="container">
+
+
+<!-- =================================================
+     PANEL
+================================================= -->
+
+<section id="panelSection" class="section active panel">
+
+    <div class="service-title">
+
+        <div class="service-icon">👻</div>
+
+        <div>
+            <h1>PANEL</h1>
+            <p>Control independiente del servicio PANEL</p>
+        </div>
+
+    </div>
+
+
+    <div class="stats">
+
+        <div class="stat">
+            <div class="label">💰 Total PANEL</div>
+            <div class="value" id="panelTotal">S/ 0.00</div>
+        </div>
+
+        <div class="stat">
+            <div class="label">🗓️ Este mes</div>
+            <div class="value" id="panelMonth">S/ 0.00</div>
+        </div>
+
+        <div class="stat">
+            <div class="label">📅 Hoy</div>
+            <div class="value" id="panelToday">S/ 0.00</div>
+        </div>
+
+        <div class="stat">
+            <div class="label">📜 Registros</div>
+            <div class="value" id="panelCount">0</div>
+        </div>
+
+    </div>
+
+
+    <button type="button" class="register-btn" onclick="openRegister('PANEL')">
+        + REGISTRAR INGRESO PANEL
+    </button>
+
+
+    <!-- FINANZAS PANEL -->
+
+    <div class="finance-box">
+
+        <div class="finance-head">
+
+            <h2>👻 Finanzas de PANEL</h2>
+
+            <p>
+                Calcula inversión, ventas, ganancia y reinversión.
+            </p>
+
+        </div>
+
+
+        <div class="finance-inputs">
+
+            <div class="field">
+                <label>📦 Cantidad comprada</label>
+                <input id="panelQty" type="number" min="0" value="0" oninput="calculateFinance('PANEL')">
+            </div>
+
+            <div class="field">
+                <label>💰 Costo total inversión</label>
+                <input id="panelCost" type="number" min="0" step="0.01" value="0" oninput="calculateFinance('PANEL')">
+            </div>
+
+            <div class="field">
+                <label>🏷️ Precio venta por unidad</label>
+                <input id="panelPrice" type="number" min="0" step="0.01" value="0" oninput="calculateFinance('PANEL')">
+            </div>
+
+            <div class="field">
+                <label>🔄 Cantidad a reinvertir</label>
+                <input id="panelReQty" type="number" min="0" value="0" oninput="calculateFinance('PANEL')">
+            </div>
+
+        </div>
+
+
+        <div class="finance-results">
+
+            <div class="result">
+                <span>📦 Costo por unidad</span>
+                <strong id="panelUnitCost">S/ 0.00</strong>
+            </div>
+
+            <div class="result">
+                <span>🛒 Venta total</span>
+                <strong id="panelSale">S/ 0.00</strong>
+            </div>
+
+            <div class="result profit">
+                <span>💰 Ganancia total</span>
+                <strong id="panelProfit">S/ 0.00</strong>
+            </div>
+
+            <div class="result invest">
+                <span>🔄 Reinversión</span>
+                <strong id="panelInvestment">S/ 0.00</strong>
+            </div>
+
+            <div class="result available">
+                <span>💵 Dinero disponible</span>
+                <strong id="panelAvailable">S/ 0.00</strong>
+            </div>
+
+            <div class="result">
+                <span>📊 Margen de ganancia</span>
+                <strong id="panelMargin">0%</strong>
+            </div>
+
+            <div class="result invest">
+                <span>📦 Próxima inversión</span>
+                <strong id="panelNext">S/ 0.00</strong>
+            </div>
+
+            <div class="result">
+                <span>📦 Próximas unidades</span>
+                <strong id="panelUnits">0</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- INGRESOS POR MES -->
+
+    <div class="month-title">
+
+        <h2>Ingresos por mes</h2>
+
+        <select class="year" id="panelYear" onchange="renderMonths('PANEL')"></select>
+
+    </div>
+
+    <div class="months" id="panelMonths"></div>
+
+</section>
+
+
+
+<!-- =================================================
+     SMS
+================================================= -->
+
+<section id="smsSection" class="section sms">
+
+    <div class="service-title">
+
+        <div class="service-icon">◉</div>
+
+        <div>
+            <h1>SMS</h1>
+            <p>Control independiente del servicio SMS</p>
+        </div>
+
+    </div>
+
+
+    <div class="stats">
+
+        <div class="stat">
+            <div class="label">💰 Total SMS</div>
+            <div class="value" id="smsTotal">S/ 0.00</div>
+        </div>
+
+        <div class="stat">
+            <div class="label">🗓️ Este mes</div>
+            <div class="value" id="smsMonth">S/ 0.00</div>
+        </div>
+
+        <div class="stat">
+            <div class="label">📅 Hoy</div>
+            <div class="value" id="smsToday">S/ 0.00</div>
+        </div>
+
+        <div class="stat">
+            <div class="label">📜 Registros</div>
+            <div class="value" id="smsCount">0</div>
+        </div>
+
+    </div>
+
+
+    <button type="button" class="register-btn" onclick="openRegister('SMS')">
+        + REGISTRAR INGRESO SMS
+    </button>
+
+
+    <div class="finance-box">
+
+        <div class="finance-head">
+
+            <h2>🟢 Finanzas de SMS</h2>
+
+            <p>
+                Controla cuánto compras, cuánto vendes y cuánto debes reinvertir.
+            </p>
+
+        </div>
+
+
+        <div class="finance-inputs">
+
+            <div class="field">
+                <label>📦 Cantidad comprada</label>
+                <input id="smsQty" type="number" min="0" value="0" oninput="calculateFinance('SMS')">
+            </div>
+
+            <div class="field">
+                <label>💰 Costo total inversión</label>
+                <input id="smsCost" type="number" min="0" step="0.01" value="0" oninput="calculateFinance('SMS')">
+            </div>
+
+            <div class="field">
+                <label>🏷️ Precio venta por unidad</label>
+                <input id="smsPrice" type="number" min="0" step="0.01" value="0" oninput="calculateFinance('SMS')">
+            </div>
+
+            <div class="field">
+                <label>🔄 Cantidad a reinvertir</label>
+                <input id="smsReQty" type="number" min="0" value="0" oninput="calculateFinance('SMS')">
+            </div>
+
+        </div>
+
+
+        <div class="finance-results">
+
+            <div class="result">
+                <span>📦 Costo por unidad</span>
+                <strong id="smsUnitCost">S/ 0.00</strong>
+            </div>
+
+            <div class="result">
+                <span>🛒 Venta total</span>
+                <strong id="smsSale">S/ 0.00</strong>
+            </div>
+
+            <div class="result profit">
+                <span>💰 Ganancia total</span>
+                <strong id="smsProfit">S/ 0.00</strong>
+            </div>
+
+            <div class="result invest">
+                <span>🔄 Reinversión</span>
+                <strong id="smsInvestment">S/ 0.00</strong>
+            </div>
+
+            <div class="result available">
+                <span>💵 Dinero disponible</span>
+                <strong id="smsAvailable">S/ 0.00</strong>
+            </div>
+
+            <div class="result">
+                <span>📊 Margen de ganancia</span>
+                <strong id="smsMargin">0%</strong>
+            </div>
+
+            <div class="result invest">
+                <span>📦 Próxima inversión</span>
+                <strong id="smsNext">S/ 0.00</strong>
+            </div>
+
+            <div class="result">
+                <span>📦 Próximas unidades</span>
+                <strong id="smsUnits">0</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="month-title">
+
+        <h2>Ingresos por mes</h2>
+
+        <select class="year" id="smsYear" onchange="renderMonths('SMS')"></select>
+
+    </div>
+
+    <div class="months" id="smsMonths"></div>
+
+</section>
+
+
+
+<!-- =================================================
+     STREAMING
+================================================= -->
+
+<section id="streamingSection" class="section streaming">
+
+    <div class="service-title">
+
+        <div class="service-icon">
+            <b style="font-size:27px;">N</b>
+        </div>
+
+        <div>
+            <h1>STREAMING</h1>
+            <p>Control independiente del servicio STREAMING</p>
+        </div>
+
+    </div>
+
+
+    <div class="stats">
+
+        <div class="stat">
+            <div class="label">💰 Total STREAMING</div>
+            <div class="value" id="streamingTotal">S/ 0.00</div>
+        </div>
+
+        <div class="stat">
+            <div class="label">🗓️ Este mes</div>
+            <div class="value" id="streamingMonth">S/ 0.00</div>
+        </div>
+
+        <div class="stat">
+            <div class="label">📅 Hoy</div>
+            <div class="value" id="streamingToday">S/ 0.00</div>
+        </div>
+
+        <div class="stat">
+            <div class="label">📜 Registros</div>
+            <div class="value" id="streamingCount">0</div>
+        </div>
+
+    </div>
+
+
+    <button type="button" class="register-btn" onclick="openRegister('STREAMING')">
+        + REGISTRAR INGRESO STREAMING
+    </button>
+
+
+    <div class="finance-box">
+
+        <div class="finance-head">
+
+            <h2>🔴 Finanzas de STREAMING</h2>
+
+            <p>
+                Controla inversión, ventas, ganancia y próxima compra.
+            </p>
+
+        </div>
+
+
+        <div class="finance-inputs">
+
+            <div class="field">
+                <label>📦 Cantidad comprada</label>
+                <input id="streamingQty" type="number" min="0" value="0" oninput="calculateFinance('STREAMING')">
+            </div>
+
+            <div class="field">
+                <label>💰 Costo total inversión</label>
+                <input id="streamingCost" type="number" min="0" step="0.01" value="0" oninput="calculateFinance('STREAMING')">
+            </div>
+
+            <div class="field">
+                <label>🏷️ Precio venta por unidad</label>
+                <input id="streamingPrice" type="number" min="0" step="0.01" value="0" oninput="calculateFinance('STREAMING')">
+            </div>
+
+            <div class="field">
+                <label>🔄 Cantidad a reinvertir</label>
+                <input id="streamingReQty" type="number" min="0" value="0" oninput="calculateFinance('STREAMING')">
+            </div>
+
+        </div>
+
+
+        <div class="finance-results">
+
+            <div class="result">
+                <span>📦 Costo por unidad</span>
+                <strong id="streamingUnitCost">S/ 0.00</strong>
+            </div>
+
+            <div class="result">
+                <span>🛒 Venta total</span>
+                <strong id="streamingSale">S/ 0.00</strong>
+            </div>
+
+            <div class="result profit">
+                <span>💰 Ganancia total</span>
+                <strong id="streamingProfit">S/ 0.00</strong>
+            </div>
+
+            <div class="result invest">
+                <span>🔄 Reinversión</span>
+                <strong id="streamingInvestment">S/ 0.00</strong>
+            </div>
+
+            <div class="result available">
+                <span>💵 Dinero disponible</span>
+                <strong id="streamingAvailable">S/ 0.00</strong>
+            </div>
+
+            <div class="result">
+                <span>📊 Margen de ganancia</span>
+                <strong id="streamingMargin">0%</strong>
+            </div>
+
+            <div class="result invest">
+                <span>📦 Próxima inversión</span>
+                <strong id="streamingNext">S/ 0.00</strong>
+            </div>
+
+            <div class="result">
+                <span>📦 Próximas unidades</span>
+                <strong id="streamingUnits">0</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="month-title">
+
+        <h2>Ingresos por mes</h2>
+
+        <select class="year" id="streamingYear" onchange="renderMonths('STREAMING')"></select>
+
+    </div>
+
+    <div class="months" id="streamingMonths"></div>
+
+</section>
+
+
+
+<!-- =================================================
+     FINANZAS GENERAL
+================================================= -->
+
+<section id="financeSection" class="section">
+
+    <div class="service-title">
+
+        <div class="service-icon">💰</div>
+
+        <div>
+            <h1>FINANZAS</h1>
+            <p>Resumen general de todos tus servicios</p>
+        </div>
+
+    </div>
+
+
+    <div class="general-grid">
+
+        <div class="general-card">
+            <span>💰 Total general</span>
+            <strong id="generalTotal">S/ 0.00</strong>
+        </div>
+
+        <div class="general-card">
+            <span>👻 Total PANEL</span>
+            <strong id="generalPanel">S/ 0.00</strong>
+        </div>
+
+        <div class="general-card">
+            <span>🟢 Total SMS</span>
+            <strong id="generalSms">S/ 0.00</strong>
+        </div>
+
+        <div class="general-card">
+            <span>🔴 Total STREAMING</span>
+            <strong id="generalStreaming">S/ 0.00</strong>
+        </div>
+
+    </div>
+
+
+    <br>
+
+    <div class="finance-box">
+
+        <div class="finance-head">
+
+            <h2>📊 Resumen de dinero</h2>
+
+            <p>
+                Aquí puedes ver todo lo generado entre PANEL, SMS y STREAMING.
+            </p>
+
+        </div>
+
+        <div class="general-grid">
+
+            <div class="general-card">
+                <span>📅 Registros totales</span>
+                <strong id="generalCount">0</strong>
+            </div>
+
+            <div class="general-card">
+                <span>🗓️ Este mes</span>
+                <strong id="generalMonth">S/ 0.00</strong>
+            </div>
+
+            <div class="general-card">
+                <span>📅 Hoy</span>
+                <strong id="generalToday">S/ 0.00</strong>
+            </div>
+
+            <div class="general-card">
+                <span>📈 Promedio por registro</span>
+                <strong id="generalAverage">S/ 0.00</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =================================================
+     HISTORIAL
+================================================= -->
+
+<section id="historySection" class="section">
+
+    <div class="service-title">
+
+        <div class="service-icon">📜</div>
+
+        <div>
+            <h1>HISTORIAL</h1>
+            <p>Todos tus ingresos registrados</p>
+        </div>
+
+    </div>
+
+
+    <div class="history-tools">
+
+        <input
+            type="text"
+            id="searchHistory"
+            placeholder="🔎 Buscar ingreso..."
+            oninput="renderHistory()"
+        >
+
+        <select id="filterService" onchange="renderHistory()">
+            <option value="">Todos</option>
+            <option value="PANEL">PANEL</option>
+            <option value="SMS">SMS</option>
+            <option value="STREAMING">STREAMING</option>
+        </select>
+
+    </div>
+
+
+    <div class="history-list" id="historyList"></div>
+
+</section>
+
+
+
+<!-- =================================================
+     REGISTRAR
+================================================= -->
+
+<section id="registerSection" class="section">
+
+    <div class="form-box">
+
+        <h2 id="registerTitle">Registrar ingreso</h2>
+
+        <form id="incomeForm">
+
+            <input type="hidden" id="registerService">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Concepto</label>
+                    <input id="concept" type="text" placeholder="Ej: Venta de servicio" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Monto recibido</label>
+                    <input id="amount" type="number" min="0" step="0.01" placeholder="0.00" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input id="date" type="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Servicio</label>
+                    <input id="category" type="text" readonly>
+                </div>
+
+                <div class="form-group full">
+                    <label>Descripción</label>
+                    <textarea id="description" placeholder="Descripción opcional"></textarea>
+                </div>
+
+            </div>
+
+            <button class="save-btn" type="submit">
+                GUARDAR INGRESO
+            </button>
+
+        </form>
+
+    </div>
+
+</section>
+
+
+</main>
+
+
+<script>
+
+/* =================================================
+   DATOS
+================================================= */
+
+let incomes = JSON.parse(
+    localStorage.getItem("ghostXIngresos") || "[]"
+);
+
+let currentService = "PANEL";
+
+
+/* =================================================
+   MONEDA
+================================================= */
+
+function money(value){
+
+    return new Intl.NumberFormat("es-PE",{
+        style:"currency",
+        currency:"PEN"
+    }).format(Number(value)||0);
+
+}
+
+
+/* =================================================
+   NAVEGACIÓN
+================================================= */
+
+function showSection(id,button){
+
+    document.querySelectorAll(".section")
+        .forEach(s=>s.classList.remove("active"));
+
+    document.getElementById(id)
+        .classList.add("active");
+
+    document.querySelectorAll(".nav button")
+        .forEach(b=>b.classList.remove("active"));
+
+    if(button){
+        button.classList.add("active");
+    }
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+    updateAll();
+
+}
+
+
+/* =================================================
+   REGISTRAR
+================================================= */
+
+function openRegister(service){
+
+    currentService = service;
+
+    document.getElementById("registerService").value = service;
+
+    document.getElementById("category").value = service;
+
+    document.getElementById("registerTitle").innerText =
+        "Registrar ingreso " + service;
+
+    document.querySelectorAll(".section")
+        .forEach(s=>s.classList.remove("active"));
+
+    document.getElementById("registerSection")
+        .classList.add("active");
+
+    document.getElementById("date").value =
+        new Date().toISOString().split("T")[0];
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+
+/* =================================================
+   FORMULARIO
+================================================= */
+
+document.getElementById("incomeForm")
+.addEventListener("submit",function(e){
+
+    e.preventDefault();
+
+    const service =
+        document.getElementById("registerService").value;
+
+    const income = {
+
+        id:Date.now(),
+
+        service:service,
+
+        concept:
+            document.getElementById("concept").value,
+
+        amount:
+            Number(document.getElementById("amount").value),
+
+        date:
+            document.getElementById("date").value,
+
+        category:service,
+
+        description:
+            document.getElementById("description").value
+
+    };
+
+
+    incomes.push(income);
+
+    localStorage.setItem(
+        "ghostXIngresos",
+        JSON.stringify(incomes)
+    );
+
+
+    this.reset();
+
+    currentService = service;
+
+    showService(service);
+
+    updateAll();
+
+});
+
+
+/* =================================================
+   VOLVER AL SERVICIO
+================================================= */
+
+function showService(service){
+
+    const id =
+        service.toLowerCase() + "Section";
+
+    document.querySelectorAll(".section")
+        .forEach(s=>s.classList.remove("active"));
+
+    document.getElementById(id)
+        .classList.add("active");
+
+    document.querySelectorAll(".nav button")
+        .forEach(b=>b.classList.remove("active"));
+
+    const btn =
+        document.querySelector(
+            `.nav button.${service.toLowerCase()}`
+        );
+
+    if(btn){
+        btn.classList.add("active");
+    }
+
+}
+
+
+/* =================================================
+   ESTADÍSTICAS SERVICIO
+================================================= */
+
+function serviceData(service){
+
+    return incomes.filter(
+        x=>x.service===service
+    );
+
+}
+
+
+function updateServiceStats(service){
+
+    const data = serviceData(service);
+
+    const total =
+        data.reduce((sum,x)=>sum+Number(x.amount),0);
+
+    const now = new Date();
+
+    const month =
+        data
+        .filter(x=>{
+
+            const d = new Date(x.date+"T00:00:00");
+
+            return d.getMonth()===now.getMonth()
+                && d.getFullYear()===now.getFullYear();
+
+        })
+        .reduce((sum,x)=>sum+Number(x.amount),0);
+
+
+    const today =
+        data
+        .filter(x=>x.date===new Date().toISOString().split("T")[0])
+        .reduce((sum,x)=>sum+Number(x.amount),0);
+
+
+    const key =
+        service.toLowerCase();
+
+
+    document.getElementById(key+"Total")
+        .innerText=money(total);
+
+    document.getElementById(key+"Month")
+        .innerText=money(month);
+
+    document.getElementById(key+"Today")
+        .innerText=money(today);
+
+    document.getElementById(key+"Count")
+        .innerText=data.length;
+
+}
+
+
+/* =================================================
+   MESES
+================================================= */
+
+const months = [
+
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre"
+
+];
+
+
+function setupYears(){
+
+    const currentYear =
+        new Date().getFullYear();
+
+    ["panelYear","smsYear","streamingYear"]
+        .forEach(id=>{
+
+            const select =
+                document.getElementById(id);
+
+            if(select.children.length===0){
+
+                for(let y=currentYear-2;y<=currentYear+3;y++){
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value=y;
+                    option.textContent=y;
+
+                    if(y===currentYear)
+                        option.selected=true;
+
+                    select.appendChild(option);
+
+                }
+
+            }
+
+        });
+
+}
+
+
+function renderMonths(service){
+
+    const key =
+        service.toLowerCase();
+
+    const year =
+        Number(
+            document.getElementById(key+"Year").value
+        );
+
+    const container =
+        document.getElementById(key+"Months");
+
+    container.innerHTML="";
+
+
+    months.forEach((month,index)=>{
+
+        const total =
+            serviceData(service)
+            .filter(x=>{
+
+                const d =
+                    new Date(x.date+"T00:00:00");
+
+                return d.getFullYear()===year
+                    && d.getMonth()===index;
+
+            })
+            .reduce(
+                (sum,x)=>sum+Number(x.amount),
+                0
+            );
+
+
+        const div =
+            document.createElement("div");
+
+        div.className="month";
+
+        div.innerHTML=`
+
+            <div class="month-name">
+                ${month}
+            </div>
+
+            <div class="month-value">
+                ${money(total)}
+            </div>
+
+        `;
+
+
+        div.onclick=()=>{
+
+            openMonthHistory(
+                service,
+                year,
+                index
+            );
+
+        };
+
+
+        container.appendChild(div);
+
+    });
+
+}
+
+
+/* =================================================
+   VER MES
+================================================= */
+
+function openMonthHistory(service,year,month){
+
+    document.getElementById("filterService").value=service;
+
+    document.getElementById("searchHistory").value="";
+
+    showSection(
+        "historySection",
+        document.querySelector(".nav button.history")
+    );
+
+    renderHistory(service,year,month);
+
+}
+
+
+function renderHistory(serviceFilter=null,yearFilter=null,monthFilter=null){
+
+    const search =
+        document.getElementById("searchHistory").value
+        .toLowerCase();
+
+    let data=[...incomes];
+
+
+    const selectedService =
+        serviceFilter ||
+        document.getElementById("filterService").value;
+
+
+    if(selectedService){
+        data=data.filter(
+            x=>x.service===selectedService
+        );
+    }
+
+
+    if(yearFilter!==null){
+
+        data=data.filter(x=>{
+
+            const d =
+                new Date(x.date+"T00:00:00");
+
+            return d.getFullYear()===yearFilter
+                && d.getMonth()===monthFilter;
+
+        });
+
+    }
+
+
+    if(search){
+
+        data=data.filter(x=>
+            x.concept.toLowerCase().includes(search) ||
+            x.service.toLowerCase().includes(search) ||
+            String(x.amount).includes(search)
+        );
+
+    }
+
+
+    data.sort(
+        (a,b)=>new Date(b.date)-new Date(a.date)
+    );
+
+
+    const list =
+        document.getElementById("historyList");
+
+    list.innerHTML="";
+
+
+    if(data.length===0){
+
+        list.innerHTML=`
+
+            <div class="form-box">
+                <p style="color:#777;">
+                    No hay ingresos registrados.
+                </p>
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    data.forEach(item=>{
+
+        const div =
+            document.createElement("div");
+
+        div.className="history-item";
+
+
+        div.innerHTML=`
+
+            <div class="history-info">
+
+                <strong>
+                    ${item.concept}
+                </strong>
+
+                <small>
+                    ${item.service} · ${item.date}
+                </small>
+
+                ${
+                    item.description
+                    ?
+                    `<small>${item.description}</small>`
+                    :
+                    ""
+                }
+
+            </div>
+
+
+            <div style="display:flex;align-items:center;gap:10px;">
+
+                <div class="history-amount">
+                    ${money(item.amount)}
+                </div>
+
+                <button
+                    class="delete"
+                    onclick="deleteIncome('${item.id}')">
+                    🗑
+                </button>
+
+            </div>
+
+        `;
+
+
+        list.appendChild(div);
+
+    });
+
+}
+
+
+/* =================================================
+   ELIMINAR
+================================================= */
+
+function deleteIncome(id){
+
+    incomes =
+        incomes.filter(
+            x=>String(x.id)!==String(id)
+        );
+
+    localStorage.setItem(
+        "ghostXIngresos",
+        JSON.stringify(incomes)
+    );
+
+    updateAll();
+
+    renderHistory();
+
+}
+
+
+/* =================================================
+   CALCULADORA FINANCIERA
+================================================= */
+
+function calculateFinance(service){
+
+    const key =
+        service.toLowerCase();
+
+
+    const qty =
+        Number(
+            document.getElementById(key+"Qty").value
+        )||0;
+
+
+    const cost =
+        Number(
+            document.getElementById(key+"Cost").value
+        )||0;
+
+
+    const price =
+        Number(
+            document.getElementById(key+"Price").value
+        )||0;
+
+
+    const reQty =
+        Number(
+            document.getElementById(key+"ReQty").value
+        )||0;
+
+
+    const unitCost =
+        qty>0 ? cost/qty : 0;
+
+
+    const sale =
+        qty*price;
+
+
+    const profit =
+        sale-cost;
+
+
+    const reinvest =
+        reQty*unitCost;
+
+
+    const available =
+        sale-reinvest;
+
+
+    const margin =
+        sale>0
+        ? (profit/sale)*100
+        : 0;
+
+
+    const nextUnits =
+        unitCost>0
+        ? Math.floor(available/unitCost)
+        : 0;
+
+
+    const nextInvestment =
+        nextUnits*unitCost;
+
+
+    document.getElementById(key+"UnitCost")
+        .innerText=money(unitCost);
+
+    document.getElementById(key+"Sale")
+        .innerText=money(sale);
+
+    document.getElementById(key+"Profit")
+        .innerText=money(profit);
+
+    document.getElementById(key+"Investment")
+        .innerText=money(reinvest);
+
+    document.getElementById(key+"Available")
+        .innerText=money(available);
+
+    document.getElementById(key+"Margin")
+        .innerText=margin.toFixed(2)+"%";
+
+    document.getElementById(key+"Next")
+        .innerText=money(nextInvestment);
+
+    document.getElementById(key+"Units")
+        .innerText=nextUnits;
+
+}
+
+
+/* =================================================
+   FINANZAS GENERAL
+================================================= */
+
+function updateGeneral(){
+
+    const total =
+        incomes.reduce(
+            (sum,x)=>sum+Number(x.amount),
+            0
+        );
+
+
+    const panel =
+        serviceData("PANEL")
+        .reduce((sum,x)=>sum+Number(x.amount),0);
+
+
+    const sms =
+        serviceData("SMS")
+        .reduce((sum,x)=>sum+Number(x.amount),0);
+
+
+    const streaming =
+        serviceData("STREAMING")
+        .reduce((sum,x)=>sum+Number(x.amount),0);
+
+
+    const now =
+        new Date();
+
+
+    const month =
+        incomes.filter(x=>{
+
+            const d =
+                new Date(x.date+"T00:00:00");
+
+            return d.getMonth()===now.getMonth()
+                && d.getFullYear()===now.getFullYear();
+
+        })
+        .reduce((sum,x)=>sum+Number(x.amount),0);
+
+
+    const today =
+        incomes.filter(
+            x=>x.date===new Date().toISOString().split("T")[0]
+        )
+        .reduce((sum,x)=>sum+Number(x.amount),0);
+
+
+    document.getElementById("generalTotal")
+        .innerText=money(total);
+
+    document.getElementById("generalPanel")
+        .innerText=money(panel);
+
+    document.getElementById("generalSms")
+        .innerText=money(sms);
+
+    document.getElementById("generalStreaming")
+        .innerText=money(streaming);
+
+    document.getElementById("generalCount")
+        .innerText=incomes.length;
+
+    document.getElementById("generalMonth")
+        .innerText=money(month);
+
+    document.getElementById("generalToday")
+        .innerText=money(today);
+
+    document.getElementById("generalAverage")
+        .innerText=
+        money(
+            incomes.length
+            ? total/incomes.length
+            : 0
+        );
+
+}
+
+
+/* =================================================
+   ACTUALIZAR TODO
+================================================= */
+
+function updateAll(){
+
+    updateServiceStats("PANEL");
+    updateServiceStats("SMS");
+    updateServiceStats("STREAMING");
+
+    renderMonths("PANEL");
+    renderMonths("SMS");
+    renderMonths("STREAMING");
+
+    updateGeneral();
+
+    calculateFinance("PANEL");
+    calculateFinance("SMS");
+    calculateFinance("STREAMING");
+
+}
+
+
+/* =================================================
+   INICIO
+================================================= */
+
+setupYears();
+
+updateAll();
+
+renderHistory();
+
+</script>
+
+</body>
+</html>
